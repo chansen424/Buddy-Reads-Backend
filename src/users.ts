@@ -50,11 +50,22 @@ router.post('/', async (req, res) => {
 // Update an existing user
 router.put('/:id', async (req, res) => {
     try {
-        const user = await model.update({ id: req.params.id }, { ...req.body }, {"condition": new dynamoose.Condition().exists()});
+        const user = await model.update({ id: req.params.id }, { ...req.body }, {"condition": new dynamoose.Condition().filter("id").exists()});
         res.status(200).json(user);
     } catch (err) {
         res.status(500).json({ err: "User does not exist and, therefore, cannot be updated." })
     }
+});
+
+// Delete a user
+router.delete('/:id', async (req, res) => {
+    try {
+        await model.delete(req.params.id);
+        res.status(200);
+    } catch (err) {
+        res.status(500).json({ err: err.message });
+    }
+    
 });
 
 export default router;
