@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import * as dynamoose from 'dynamoose';
 import users from './users';
+import groups from './groups';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const app = express();
 app.use(express.json());
 
 app.use('/users', users);
+app.use('/groups', groups)
 
 const port = process.env.PORT || 3000;
 
