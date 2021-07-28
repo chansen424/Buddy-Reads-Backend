@@ -9,6 +9,10 @@ const schema = new dynamoose.Schema({
   id: String,
   name: String,
   owner: String,
+  reads: {
+    type: Array,
+    schema: [String],
+  },
   members: {
     type: Set,
     schema: [String],
@@ -40,7 +44,7 @@ router.post('/', authenticateJWT, async (req, res) => {
       throw Error('Please provide a name!');
     }
     const group = await model.create({
-      id: uuidv4(), name, owner: reqUser.id, members: new Set([reqUser.id]),
+      id: uuidv4(), name, owner: reqUser.id, members: new Set([reqUser.id]), reads: [],
     });
     res.status(200).json(group);
   } catch (err) {
@@ -82,3 +86,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 export default router;
+export { model as GroupModel };
