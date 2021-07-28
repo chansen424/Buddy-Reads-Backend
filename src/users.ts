@@ -57,10 +57,13 @@ router.post('/', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
+  if (username === undefined || password === undefined) {
+    return res.status(400).json({ err: 'Username AND password required.' });
+  }
   const userResults = await model.scan('username').eq(username).limit(1).exec();
   const user = userResults[0];
   if (user === undefined) {
-    res.status(500).json({ err: 'User does not exist. Please sign up first.' });
+    return res.status(500).json({ err: 'User does not exist. Please sign up first.' });
   }
   bcrypt.compare(password, user.password, (err, result) => {
     if (err) {
@@ -69,15 +72,10 @@ router.post('/login', async (req, res) => {
     if (result) {
       return res
         .status(200)
-        .cookie(
-          'accessToken',
-          jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
-        )
-        .cookie(
-          'refreshToken',
-          jwt.sign({ id: user.id }, process.env.JWT_SECRET as string),
-        )
-        .send();
+        .json({
+          accessToken: jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
+          refreshToken: jwt.sign({ id: user.id }, process.env.JWT_SECRET as string),
+        });
     }
     return res.status(400).json({ err: 'Incorrect password!' });
   });
@@ -104,10 +102,9 @@ router.post('/token', (req, res) => {
       const user = payload as { id: string };
       return res
         .status(200)
-        .cookie(
-          'accessToken',
-          jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
-        );
+        .json({
+          accessToken: jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
+        });
     });
 });
 

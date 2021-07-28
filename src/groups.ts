@@ -48,7 +48,7 @@ router.post('/', authenticateJWT, async (req, res) => {
 // Join a group
 router.put('/:id', authenticateJWT, async (req, res) => {
   try {
-    if (req.cookies.id === undefined) {
+    if (req.body.reqUser === undefined) {
       throw Error('User must be signed in to join a group.');
     }
     const group = await model.update({ id: req.params.id }, { $ADD: { members: [req.body.reqUser.id] } }, { condition: new dynamoose.Condition().filter('id').exists() });
