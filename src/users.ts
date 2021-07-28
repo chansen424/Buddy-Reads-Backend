@@ -59,8 +59,11 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ err: 'User does not exist. Please sign up first.' });
   }
   bcrypt.compare(password, user.password, (err, result) => {
+    if (err) {
+      res.status(500).json({ err });
+    }
     if (result) {
-      res.status(200).json({ id: user.id });
+      res.status(200).cookie('id', user.id).send();      
     } else {
       res.status(400).json({ err: 'Incorrect password!' });
     }

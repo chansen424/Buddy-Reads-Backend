@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import * as dynamoose from 'dynamoose';
 import users from './users';
@@ -15,6 +16,7 @@ dynamoose.aws.sdk.config.update({
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/users', users);
 app.use('/groups', groups);
