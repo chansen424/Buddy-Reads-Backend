@@ -72,7 +72,7 @@ router.post('/login', async (req, res) => {
     }
     if (result) {
       const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
-      const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string);
+      const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_SECRET as string);
 
       refreshTokens.push(refreshToken);
 
@@ -87,7 +87,7 @@ router.post('/login', async (req, res) => {
   });
 });
 
-router.post('/token', (req, res) => {
+router.post('/token', async (req, res) => {
   const { token } = req.body;
 
   if (token === undefined) {
@@ -98,7 +98,7 @@ router.post('/token', (req, res) => {
     return res.status(403).json({ err: 'Invalid refresh token' });
   }
 
-  return jwt.verify(token, process.env.REFRESH_SECRET as string,
+  return await jwt.verify(token, process.env.REFRESH_SECRET as string,
     (err: jwt.VerifyErrors | null, payload: jwt.JwtPayload | undefined) => {
       if (err) {
         return res.status(403).json({ err });
