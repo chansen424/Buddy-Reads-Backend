@@ -63,7 +63,7 @@ router.post('/login', async (req, res) => {
       res.status(500).json({ err });
     }
     if (result) {
-      res.status(200).cookie('id', user.id).send();      
+      res.status(200).cookie('id', user.id).send();
     } else {
       res.status(400).json({ err: 'Incorrect password!' });
     }
