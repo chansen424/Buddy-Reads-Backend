@@ -39,7 +39,9 @@ router.post('/', authenticateJWT, async (req, res) => {
     if (name === undefined) {
       throw Error('Please provide a name!');
     }
-    const group = await model.create({ id: uuidv4(), name, owner: reqUser.id, members: new Set([reqUser.id]) });
+    const group = await model.create({
+      id: uuidv4(), name, owner: reqUser.id, members: new Set([reqUser.id]),
+    });
     res.status(200).json(group);
   } catch (err) {
     res.status(500).json({ err: err.message });
