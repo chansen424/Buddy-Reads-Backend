@@ -64,14 +64,57 @@ router.post('/login', async (req, res) => {
   }
   bcrypt.compare(password, user.password, (err, result) => {
     if (err) {
-      res.status(500).json({ err });
+      return res.status(500).json({ err });
     }
     if (result) {
-      res.status(200).cookie('jwt', jwt.sign({ id: user.id }, process.env.JWT_SECRET as string)).send();
-    } else {
-      res.status(400).json({ err: 'Incorrect password!' });
+      return res
+        .status(200)
+        .cookie(
+          'accessToken',
+          jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
+        )
+        .cookie(
+          'refreshToken',
+          jwt.sign({ id: user.id }, process.env.JWT_SECRET as string),
+        )
+        .send();
     }
+    return res.status(400).json({ err: 'Incorrect password!' });
   });
+});
+
+let refreshTokens: string[] = [];
+router.post('/token', (req, res) => {
+  const { token } = req.body;
+
+  if (token === undefined) {
+    return res.status(401).json({ err: 'No refresh token found' });
+  }
+
+  if (!refreshTokens.includes(token)) {
+    return res.status(403).json({ err: 'Invlaid refresh token' });
+  }
+
+  return jwt.verify(token, process.env.REFRESH_SECRET as string,
+    (err: jwt.VerifyErrors | null, payload: jwt.JwtPayload | undefined) => {
+      if (err) {
+        return res.status(403).json({ err: 'Error occurred while verifying refresh token' });
+      }
+
+      const user = payload as { id: string };
+      return res
+        .status(200)
+        .cookie(
+          'accessToken',
+          jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
+        );
+    });
+});
+
+router.post('/logout', (req, res) => {
+  const { token } = req.body;
+  refreshTokens = refreshTokens.filter((t) => t !== token);
+  res.send('Logout successful');
 });
 
 // Update an existing user
@@ -88,7 +131,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     await model.delete(req.params.id);
-    res.status(200);
+    res.status(200).send();
   } catch (err) {
     res.status(500).json({ err: err.message });
   }

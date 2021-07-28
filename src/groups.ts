@@ -33,13 +33,12 @@ router.get('/:id', async (req, res) => {
 
 // Create group
 router.post('/', authenticateJWT, async (req, res) => {
-  const { name, user } = req.body;
+  const { name, reqUser } = req.body;
   try {
     if (name === undefined) {
       throw Error('Please provide a name!');
     }
-    console.log(new Set(user.id));
-    const group = await model.create({ id: uuidv4(), name, members: new Set([user.id]) });
+    const group = await model.create({ id: uuidv4(), name, members: new Set([reqUser.id]) });
     res.status(200).json(group);
   } catch (err) {
     res.status(500).json({ err: err.message });
@@ -52,7 +51,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
     if (req.cookies.id === undefined) {
       throw Error('User must be signed in to join a group.');
     }
-    const group = await model.update({ id: req.params.id }, { $ADD: { members: [req.body.user.id] } }, { condition: new dynamoose.Condition().filter('id').exists() });
+    const group = await model.update({ id: req.params.id }, { $ADD: { members: [req.body.reqUser.id] } }, { condition: new dynamoose.Condition().filter('id').exists() });
     res.status(200).json(group);
   } catch (err) {
     res.status(500).json({ err: err.message });

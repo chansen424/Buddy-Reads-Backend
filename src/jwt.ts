@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+interface LocalUser {
+  id: string;
+}
+
 const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
@@ -15,7 +19,7 @@ const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
         res.sendStatus(403);
       }
 
-      req.body.user = user;
+      req.body.reqUser = user as LocalUser;
       next();
     });
   } else {
