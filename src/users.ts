@@ -8,7 +8,7 @@ const router = express.Router();
 const schema = new dynamoose.Schema({
   id: String,
   username: String,
-  password: String
+  password: String,
 }, {
   timestamps: true,
 });
@@ -53,16 +53,16 @@ router.post('/', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const userResults = await model.scan("username").eq(username).limit(1).exec();
+  const userResults = await model.scan('username').eq(username).limit(1).exec();
   const user = userResults[0];
   if (user === undefined) {
-    res.status(500).json({ err: "User does not exist. Please sign up first." });
+    res.status(500).json({ err: 'User does not exist. Please sign up first.' });
   }
   bcrypt.compare(password, user.password, (err, result) => {
     if (result) {
       res.status(200).json({ id: user.id });
     } else {
-      res.status(400).json({ err: "Incorrect password!" });
+      res.status(400).json({ err: 'Incorrect password!' });
     }
   });
 });
@@ -88,4 +88,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 export default router;
-export {model as UserModel};
+export { model as UserModel };
