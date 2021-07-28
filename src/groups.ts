@@ -38,13 +38,16 @@ router.get('/:id', async (req, res) => {
 
 // Create group
 router.post('/', authenticateJWT, async (req, res) => {
-  const { name, reqUser } = req.body;
+  const { name } = req.body;
   try {
+    if (req.user === undefined) {
+      throw Error("Must be authenticated.");
+    }
     if (name === undefined) {
       throw Error('Please provide a name!');
     }
     const group = await model.create({
-      id: uuidv4(), name, owner: reqUser.id, members: new Set([reqUser.id]), reads: [],
+      id: uuidv4(), name, owner: req.user.id, members: new Set([req.user.id]), reads: [],
     });
     res.status(200).json(group);
   } catch (err) {
@@ -55,14 +58,23 @@ router.post('/', authenticateJWT, async (req, res) => {
 // Join a group
 router.put('/:id', authenticateJWT, async (req, res) => {
   try {
-    if (req.body.reqUser === undefined) {
+    if (req.user === undefined) {
       throw Error('User must be signed in to join a group.');
     }
-    const group = await model.update({ id: req.params.id }, { $ADD: { members: [req.body.reqUser.id] } }, { condition: new dynamoose.Condition().filter('id').exists() });
+    const group = await model.update({ id: req.params.id }, { $ADD: { members: [req.user.id] } }, { condition: new dynamoose.Condition().filter('id').exists() });
     res.status(200).json(group);
   } catch (err) {
     res.status(500).json({ err: err.message });
   }
+});
+
+// Get all user's groups
+router.get('/', authenticateJWT, async (req, res) => {
+  if (req.user === undefined) {
+    return res.status(400).send();
+  }
+  const groups = await model.scan("members").contains(req.user.id).exec();
+  res.status(200).json(groups);
 });
 
 // Update an existing group

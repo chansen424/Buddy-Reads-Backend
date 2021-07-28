@@ -19,7 +19,7 @@ const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
         res.sendStatus(403);
       }
 
-      req.body.reqUser = user as LocalUser;
+      req.user = user as LocalUser;
       next();
     });
   } else {

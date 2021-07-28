@@ -18,13 +18,13 @@ const model = dynamoose.model('Read', schema);
 
 // Create read
 router.post('/', authenticateJWT, async (req, res) => {
-  const { name, group, reqUser } = req.body;
+  const { name, group } = req.body;
   const groupDocument = await GroupModel.get(group);
   try {
     if (name === undefined) {
       throw Error('Please provide a name!');
     }
-    if (groupDocument.owner !== reqUser) {
+    if (groupDocument.owner !== req.user) {
       return res.status(400).send();
     }
     const read = await model.create({
@@ -38,11 +38,10 @@ router.post('/', authenticateJWT, async (req, res) => {
 
 // Delete a read
 router.delete('/:id', authenticateJWT, async (req, res) => {
-  const { reqUser } = req.body;
   try {
     const read = await model.get(req.params.id);
     const group = await GroupModel.get(read.group);
-    if (reqUser.id === group.owner) {
+    if (req.user!.id === group.owner) {
       await model.delete(req.params.id);
       return res.status(200).send();
     }
