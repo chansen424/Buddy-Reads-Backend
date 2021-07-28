@@ -55,6 +55,7 @@ router.post('/', async (req, res) => {
   }
 });
 
+let refreshTokens: string[] = [];
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if (username === undefined || password === undefined) {
@@ -65,23 +66,27 @@ router.post('/login', async (req, res) => {
   if (user === undefined) {
     return res.status(500).json({ err: 'User does not exist. Please sign up first.' });
   }
-  bcrypt.compare(password, user.password, (err, result) => {
+  return bcrypt.compare(password, user.password, (err, result) => {
     if (err) {
       return res.status(500).json({ err });
     }
     if (result) {
+      const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+      const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string);
+
+      refreshTokens.push(refreshToken);
+
       return res
         .status(200)
         .json({
-          accessToken: jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
-          refreshToken: jwt.sign({ id: user.id }, process.env.JWT_SECRET as string),
+          accessToken,
+          refreshToken,
         });
     }
     return res.status(400).json({ err: 'Incorrect password!' });
   });
 });
 
-let refreshTokens: string[] = [];
 router.post('/token', (req, res) => {
   const { token } = req.body;
 
@@ -90,13 +95,13 @@ router.post('/token', (req, res) => {
   }
 
   if (!refreshTokens.includes(token)) {
-    return res.status(403).json({ err: 'Invlaid refresh token' });
+    return res.status(403).json({ err: 'Invalid refresh token' });
   }
 
   return jwt.verify(token, process.env.REFRESH_SECRET as string,
     (err: jwt.VerifyErrors | null, payload: jwt.JwtPayload | undefined) => {
       if (err) {
-        return res.status(403).json({ err: 'Error occurred while verifying refresh token' });
+        return res.status(403).json({ err });
       }
 
       const user = payload as { id: string };

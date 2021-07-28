@@ -15,8 +15,8 @@ dynamoose.aws.sdk.config.update({
 
 const app = express();
 
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
 app.use('/users', users);
 app.use('/groups', groups);
