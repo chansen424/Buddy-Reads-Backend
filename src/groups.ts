@@ -1,6 +1,7 @@
 import express from 'express';
 import * as dynamoose from 'dynamoose';
 import { v4 as uuidv4 } from 'uuid';
+import authenticateJWT from './jwt';
 
 const router = express.Router();
 
@@ -31,13 +32,14 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create group
-router.post('/', async (req, res) => {
-  const { name } = req.body;
+router.post('/', authenticateJWT, async (req, res) => {
+  const { name, user } = req.body;
   try {
     if (name === undefined) {
       throw Error('Please provide a name!');
     }
-    const group = await model.create({ id: uuidv4(), name, members: new Set(req.cookies.id) });
+    console.log(new Set(user.id));
+    const group = await model.create({ id: uuidv4(), name, members: new Set([user.id]) });
     res.status(200).json(group);
   } catch (err) {
     res.status(500).json({ err: err.message });
@@ -45,12 +47,12 @@ router.post('/', async (req, res) => {
 });
 
 // Join a group
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateJWT, async (req, res) => {
   try {
     if (req.cookies.id === undefined) {
       throw Error('User must be signed in to join a group.');
     }
-    const group = await model.update({ id: req.params.id }, { $ADD: { members: [req.cookies.id] } }, { condition: new dynamoose.Condition().filter('id').exists() });
+    const group = await model.update({ id: req.params.id }, { $ADD: { members: [req.body.user.id] } }, { condition: new dynamoose.Condition().filter('id').exists() });
     res.status(200).json(group);
   } catch (err) {
     res.status(500).json({ err: err.message });

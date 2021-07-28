@@ -2,6 +2,10 @@ import express from 'express';
 import * as dynamoose from 'dynamoose';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = express.Router();
 
@@ -63,7 +67,7 @@ router.post('/login', async (req, res) => {
       res.status(500).json({ err });
     }
     if (result) {
-      res.status(200).cookie('id', user.id).send();
+      res.status(200).cookie('jwt', jwt.sign({ id: user.id }, process.env.JWT_SECRET as string)).send();
     } else {
       res.status(400).json({ err: 'Incorrect password!' });
     }
