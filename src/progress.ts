@@ -18,7 +18,13 @@ const model = dynamoose.model('Progress', schema);
 router.post('/', authenticateJWT, async (req, res) => {
     const { progress: newProgress, read } = req.body;
     try {
-      const progress = await model.update({ id: `${req.user!.id}-${read}` }, { progress: newProgress, read }, { condition: new dynamoose.Condition().filter('id').exists() });
+      if (newProgress === undefined) {
+        throw Error("progress undefined");
+      }
+      let progress = await model.update({ id: `${req.user!.id}-${read}` }, { progress: newProgress, read });
+      if (progress === undefined) {
+        progress = await model.create({id: `${req.user!.id}-${read}`, progress: newProgress, read});
+      }
       res.status(200).json(progress);
     } catch (err) {
       res.status(500).json({ err: 'Progress does not exist and, therefore, cannot be updated.' });
