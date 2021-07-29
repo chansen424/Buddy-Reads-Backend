@@ -37,10 +37,17 @@ router.post('/', authenticateJWT, async (req, res) => {
 });
 
 // Get reads by group
-router.get('/:id', async (req, res) => {
+router.get('/group/:id', async (req, res) => {
   const { id: groupId } = req.params;
   const reads = await model.scan("group").eq(groupId).exec();
   return res.status(200).json(reads);
+});
+
+// Get reads by id
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+  const read = await model.get(id);
+  return res.status(200).json(read);
 });
 
 // Delete a read
