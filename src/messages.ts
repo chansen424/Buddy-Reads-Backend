@@ -40,7 +40,7 @@ router.post('/', authenticateJWT, async (req, res) => {
 router.get('/:id', authenticateJWT, async (req, res) => {
   const { id: readId } = req.params;
   const progress = await ProgressModel.get(`${req.user!.id}-${readId}`);
-  const messages = await model.scan().where("read").eq(readId).and().where("progress").le(progress === undefined ? 0 : progress.progress ).exec();
+  const messages = await model.scan("read").eq(readId).and().where("progress").le(progress === undefined ? 0 : progress.progress).exec();
   return res.status(200).json(messages);
 });
 
