@@ -24,7 +24,7 @@ router.post('/', authenticateJWT, async (req, res) => {
     if (name === undefined) {
       throw Error('Please provide a name!');
     }
-    if (groupDocument.owner !== req.user) {
+    if (groupDocument.owner !== req.user!.id) {
       return res.status(400).send();
     }
     const read = await model.create({
@@ -34,6 +34,13 @@ router.post('/', authenticateJWT, async (req, res) => {
   } catch (err) {
     return res.status(500).json({ err: err.message });
   }
+});
+
+// Get reads by group
+router.get('/:id', async (req, res) => {
+  const { id: groupId } = req.params;
+  const reads = await model.scan("group").eq(groupId).exec();
+  return res.status(200).json(reads);
 });
 
 // Delete a read

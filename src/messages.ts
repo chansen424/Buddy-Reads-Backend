@@ -2,6 +2,7 @@ import express from 'express';
 import * as dynamoose from 'dynamoose';
 import { v4 as uuidv4 } from 'uuid';
 import authenticateJWT from './jwt';
+import { ProgressModel } from './progress';
 
 const router = express.Router();
 
@@ -33,6 +34,14 @@ router.post('/', authenticateJWT, async (req, res) => {
   } catch (err) {
     return res.status(500).json({ err: err.message });
   }
+});
+
+// Get messages by read
+router.get('/:id', authenticateJWT, async (req, res) => {
+  const { id: readId } = req.params;
+  const progress = await ProgressModel.get(`${req.user!.id}-${readId}`);
+  const messages = await model.scan().where("read").eq(readId).and().where("progress").le(progress === undefined ? 0 : progress.progress ).exec();
+  return res.status(200).json(messages);
 });
 
 // Delete a message
