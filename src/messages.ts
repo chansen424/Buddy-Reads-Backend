@@ -10,7 +10,14 @@ const schema = new dynamoose.Schema({
   id: String,
   owner: String,
   username: String,
-  read: String,
+  read: {
+    type: String,
+    index: {
+      name: 'read-progress-index',
+      global: true,
+      rangeKey: 'progress',
+    },
+  },
   progress: Number,
   content: String,
 }, {
@@ -22,7 +29,7 @@ const model = dynamoose.model('Message', schema);
 // Create message
 router.post('/', authenticateJWT, async (req, res) => {
   const {
-    content, progress, read
+    content, progress, read,
   } = req.body;
   try {
     if (content === undefined || progress === undefined || read === undefined) {
@@ -41,7 +48,9 @@ router.post('/', authenticateJWT, async (req, res) => {
 router.get('/:id', authenticateJWT, async (req, res) => {
   const { id: readId } = req.params;
   const progress = await ProgressModel.get(`${req.user!.id}-${readId}`);
-  const messages = await model.scan("read").eq(readId).and().where("progress").le(progress === undefined ? 0 : progress.progress).exec();
+  const messages = await model.query('read').eq(readId).where('progress').le(progress === undefined ? 0 : progress.progress)
+    .using('read-progress-index')
+    .exec();
   return res.status(200).json(messages);
 });
 
