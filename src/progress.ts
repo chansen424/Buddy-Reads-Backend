@@ -17,6 +17,9 @@ const model = dynamoose.model('Progress', schema);
 router.get('/:id', authenticateJWT, async (req, res) => {
   const {id} = req.params;
   const progress = await model.get(`${req.user!.id}-${id}`);
+  if (progress === undefined) {
+    return res.status(500).send();
+  }
   res.status(200).json(progress);
 });
 
