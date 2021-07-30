@@ -8,7 +8,13 @@ const router = express.Router();
 
 const schema = new dynamoose.Schema({
   id: String,
-  group: String,
+  group: {
+    type: String,
+    index: {
+      name: "group-index",
+      global: true
+    }
+  },
   name: String,
 }, {
   timestamps: true,
@@ -39,7 +45,7 @@ router.post('/', authenticateJWT, async (req, res) => {
 // Get reads by group
 router.get('/group/:id', async (req, res) => {
   const { id: groupId } = req.params;
-  const reads = await model.scan("group").eq(groupId).exec();
+  const reads = await model.query("group").eq(groupId).exec();
   return res.status(200).json(reads);
 });
 
