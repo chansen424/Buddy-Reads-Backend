@@ -30,9 +30,9 @@ router.post('/', authenticateJWT, async (req, res) => {
     if (name === undefined) {
       throw Error('Please provide a name!');
     }
-    if (groupDocument.owner !== req.user!.id) {
-      return res.status(400).send();
-    }
+    // if (groupDocument.owner !== req.user!.id) {
+    //   return res.status(400).send();
+    // }
     const read = await model.create({
       id: uuidv4(), name, group,
     });
