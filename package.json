@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "tsc && node build/app.js",
+    "tsc": "tsc",
     "watch": "tsc --watch & nodemon ./build/app.js",
     "lint": "eslint ./src/*"
   },
