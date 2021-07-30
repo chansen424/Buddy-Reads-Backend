@@ -41,7 +41,7 @@ router.post('/', authenticateJWT, async (req, res) => {
   const { name } = req.body;
   try {
     if (req.user === undefined) {
-      throw Error("Must be authenticated.");
+      throw Error('Must be authenticated.');
     }
     if (name === undefined) {
       throw Error('Please provide a name!');
@@ -73,8 +73,8 @@ router.get('/', authenticateJWT, async (req, res) => {
   if (req.user === undefined) {
     return res.status(400).send();
   }
-  const groups = await model.scan("members").contains(req.user.id).exec();
-  res.status(200).json(groups);
+  const groups = await model.scan('members').contains(req.user.id).exec();
+  return res.status(200).json(groups);
 });
 
 // Update an existing group
