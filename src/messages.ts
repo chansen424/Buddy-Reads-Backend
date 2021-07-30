@@ -9,6 +9,7 @@ const router = express.Router();
 const schema = new dynamoose.Schema({
   id: String,
   owner: String,
+  username: String,
   read: String,
   progress: Number,
   content: String,
@@ -28,7 +29,7 @@ router.post('/', authenticateJWT, async (req, res) => {
       return res.status(400).json({ err: 'Missing content, progress, or read.' });
     }
     const message = await model.create({
-      id: uuidv4(), owner: req.user!.id, read, content, progress,
+      id: uuidv4(), owner: req.user!.id, username: req.user!.username, read, content, progress,
     });
     return res.status(200).json(message);
   } catch (err) {

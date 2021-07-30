@@ -6,6 +6,7 @@ dotenv.config();
 
 interface LocalUser {
   id: string;
+  username: string;
 }
 
 const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {

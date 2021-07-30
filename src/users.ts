@@ -71,8 +71,8 @@ router.post('/login', async (req, res) => {
       return res.status(500).json({ err });
     }
     if (result) {
-      const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
-      const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_SECRET as string);
+      const accessToken = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+      const refreshToken = jwt.sign({ id: user.id, username: user.username }, process.env.REFRESH_SECRET as string);
 
       refreshTokens.push(refreshToken);
 
