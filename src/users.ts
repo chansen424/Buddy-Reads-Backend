@@ -11,7 +11,13 @@ const router = express.Router();
 
 const schema = new dynamoose.Schema({
   id: String,
-  username: String,
+  username: {
+    type: String,
+    index: {
+      name: 'username-index',
+      global: true,
+    },
+  },
   password: String,
 }, {
   timestamps: true,
@@ -61,7 +67,7 @@ router.post('/login', async (req, res) => {
   if (username === undefined || password === undefined) {
     return res.status(400).json({ err: 'Username AND password required.' });
   }
-  const userResults = await model.scan('username').eq(username).limit(1).exec();
+  const userResults = await model.query('username').eq(username).limit(1).exec();
   const user = userResults[0];
   if (user === undefined) {
     return res.status(500).json({ err: 'User does not exist. Please sign up first.' });
