@@ -3,6 +3,7 @@ import * as dynamoose from 'dynamoose';
 import { v4 as uuidv4 } from 'uuid';
 import authenticateJWT from './jwt';
 import { ProgressModel } from './progress';
+import { SortOrder } from 'dynamoose/dist/General';
 
 const router = express.Router();
 
@@ -49,6 +50,7 @@ router.get('/:id', authenticateJWT, async (req, res) => {
   const { id: readId } = req.params;
   const progress = await ProgressModel.get(`${req.user!.id}-${readId}`);
   const messages = await model.query('read').eq(readId).where('progress').le(progress === undefined ? 0 : progress.progress)
+    .sort(SortOrder.descending)
     .using('read-progress-index')
     .exec();
   return res.status(200).json(messages);
