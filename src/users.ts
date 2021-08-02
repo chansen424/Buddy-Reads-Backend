@@ -25,6 +25,12 @@ const schema = new dynamoose.Schema({
 
 const model = dynamoose.model('User', schema);
 
+const refreshTokenSchema = new dynamoose.Schema({
+  token: String
+});
+
+const refreshTokenModel = dynamoose.model('Refresh Tokens', refreshTokenSchema);
+
 // Get all users
 router.get('/', async (req, res) => {
   const users = await model.scan().exec();
@@ -61,7 +67,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-let refreshTokens: string[] = [];
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if (username === undefined || password === undefined) {
@@ -80,7 +85,7 @@ router.post('/login', async (req, res) => {
       const accessToken = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
       const refreshToken = jwt.sign({ id: user.id, username: user.username }, process.env.REFRESH_SECRET as string);
 
-      refreshTokens.push(refreshToken);
+      refreshTokenModel.create({token: refreshToken});
 
       return res
         .status(200)
@@ -100,7 +105,8 @@ router.post('/token', async (req, res) => {
     return res.status(401).json({ err: 'No refresh token found' });
   }
 
-  if (!refreshTokens.includes(token)) {
+  const refreshTokenDocument = await refreshTokenModel.get(token);
+  if (refreshTokenDocument === undefined) {
     return res.status(403).json({ err: 'Invalid refresh token' });
   }
 
@@ -121,7 +127,7 @@ router.post('/token', async (req, res) => {
 
 router.post('/logout', (req, res) => {
   const { token } = req.body;
-  refreshTokens = refreshTokens.filter((t) => t !== token);
+  refreshTokenModel.delete(token);
   res.send('Logout successful');
 });
 
