@@ -105,10 +105,10 @@ router.post('/token', async (req, res) => {
     return res.status(401).json({ err: 'No refresh token found' });
   }
 
-  const refreshTokenDocument = await refreshTokenModel.get(token);
-  if (refreshTokenDocument === undefined) {
-    return res.status(403).json({ err: 'Invalid refresh token' });
-  }
+  // const refreshTokenDocument = await refreshTokenModel.get(token);
+  // if (refreshTokenDocument === undefined) {
+  //   return res.status(403).json({ err: 'Invalid refresh token' });
+  // }
 
   return jwt.verify(token, process.env.REFRESH_SECRET as string,
     (err: jwt.VerifyErrors | null, payload: jwt.JwtPayload | undefined) => {
