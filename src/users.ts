@@ -116,11 +116,11 @@ router.post('/token', async (req, res) => {
         return res.status(403).json({ err });
       }
 
-      const user = payload as { id: string };
+      const user = payload as { id: string, username: string };
       return res
         .status(200)
         .json({
-          accessToken: jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
+          accessToken: jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
         });
     });
 });
